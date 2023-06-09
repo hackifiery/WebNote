@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text Editor</title>
+    <style>
+        .editor {
+            width: 600px;
+            height: 400px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+
+        .toolbar button {
+            margin-right: 5px;
+        }
+
+        .toolbar button.active {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button onclick="formatText('bold')" id="boldButton">Bold</button>
+        <button onclick="formatText('italic')" id="italicButton">Italic</button>
+        <button onclick="formatText('underline')" id="underlineButton">Underline</button>
+        <select onchange="changeFontSize(this.value)" id="fontSizeSelect">
+            <option value="12">12px</option>
+            <option value="14">14px</option>
+            <option value="16">16px</option>
+            <option value="18">18px</option>
+            <option value="20">20px</option>
+        </select>
+        <select onchange="changeFontFace(this.value)" id="fontFaceSelect">
+            <option value="Arial">Arial</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+        </select>
+        <button onclick="saveText()" id="saveButton">Save</button>
+        <input type="file" id="uploadFile" style="display: none;" accept=".txt">
+        <button onclick="uploadText()" id="uploadButton">Upload</button>
+    </div>
+
+    <div class="editor" contenteditable="true"></div>
+
+    <script>
+        const editor = document.querySelector('.editor');
+        const boldButton = document.getElementById('boldButton');
+        const italicButton = document.getElementById('italicButton');
+        const underlineButton = document.getElementById('underlineButton');
+        const fontSizeSelect = document.getElementById('fontSizeSelect');
+        const fontFaceSelect = document.getElementById('fontFaceSelect');
+        const saveButton = document.getElementById('saveButton');
+        const uploadFile = document.getElementById('uploadFile');
+        const uploadButton = document.getElementById('uploadButton');
+
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            updateButtonState(command);
+        }
+
+        function changeFontSize(size) {
+            document.execCommand('fontSize', false, size);
+        }
+
+        function changeFontFace(fontFace) {
+            document.execCommand('fontName', false, fontFace);
+        }
+
+        function updateButtonState(command) {
+            const button = getButtonByCommand(command);
+            const isActive = document.queryCommandState(command);
+            button.classList.toggle('active', isActive);
+        }
+
+        function getButtonByCommand(command) {
+            switch (command) {
+                case 'bold':
+                    return boldButton;
+                case 'italic':
+                    return italicButton;
+                case 'underline':
+                    return underlineButton;
+                default:
+                    return null;
+            }
+        }
+
+        editor.addEventListener('keyup', () => {
+            updateButtonState('bold');
+            updateButtonState('italic');
+            updateButtonState('underline');
+        });
+
+        function saveText() {
+            const text = editor.innerHTML;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'text.txt';
+            a.click();
+        }
+
+        function uploadText() {
+            uploadFile.click();
+        }
+
+        uploadFile.addEventListener('change', () => {
+            const file = uploadFile.files[0];
+            const reader = new FileReader();
+
+            reader.onload = () => {
+                const fileContent = reader.result;
+                editor.innerHTML = fileContent;
+            };
+
+            reader.readAsText(file);
+        });
+    </script>
+</body>
+</html>
